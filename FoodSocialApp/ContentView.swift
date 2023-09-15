@@ -7,9 +7,35 @@
 
 import SwiftUI
 
+enum AppRoute: Identifiable {
+    case homeFeedView
+    
+    var id: UUID {
+        switch self {
+        case .homeFeedView:
+            return UUID()
+        }
+    }
+}
+
+class PathManager: ObservableObject {
+    @Published var path = NavigationPath()
+}
+
 struct ContentView: View {
+    @StateObject var pathManager = PathManager()
+    
     var body: some View {
-        LoginView(viewModel: LogInViewModel())
+        NavigationStack(path: $pathManager.path) {
+            LoginView(viewModel: LogInViewModel())
+            .navigationDestination(for: AppRoute.self) { route in
+                switch route {
+                case .homeFeedView:
+                    HomeView()
+                }
+            }
+        }
+        .environmentObject(pathManager)
     }
 }
 
@@ -18,3 +44,6 @@ struct ContentView_Previews: PreviewProvider {
         ContentView()
     }
 }
+
+
+

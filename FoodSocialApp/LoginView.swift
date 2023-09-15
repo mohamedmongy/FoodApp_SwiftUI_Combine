@@ -12,21 +12,24 @@ import Combine
 class LogInViewModel: ObservableObject {
     @Published var error: Error?
     @Published var showAlert: Bool = false
+    @Published var userLoggedIn = false
     
     func login(
         username: String,
         password: String
     ) async throws {
         do {
-            try await NetWork.shared.request(
-                route: LoginEndPoint.login(
+          _ =  try await NetWork.shared.request(
+                route: EndPoint.login(
                     input: LoginCredentials(
-                        name:  username, //"kminchelle",
-                        password: password //"0lelplR"
+                        name: "kminchelle",
+                        password: "0lelplR"
                     )
                 ),
                 T: UserResponseDModel.self
             )
+            
+            userLoggedIn = true
         } catch(let error) {
             self.error = error
             self.showAlert = true
@@ -39,6 +42,7 @@ struct LoginView: View {
     @StateObject var viewModel: LogInViewModel
     @State var userName: String = ""
     @State var userPassword: String = ""
+    @EnvironmentObject var appRoute: PathManager
     
     var body: some View {
         ScrollView {
@@ -69,6 +73,10 @@ struct LoginView: View {
                 .cornerRadius(20)
             }
             .padding()
+            .onChange(of: viewModel.userLoggedIn, perform: { newValue in
+                appRoute.path.append(AppRoute.homeFeedView)
+            })
+            
             .alert(
                 viewModel.error?.localizedDescription ?? "Error",
                 isPresented: $viewModel.showAlert) {
